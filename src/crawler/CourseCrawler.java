@@ -25,7 +25,6 @@ public class CourseCrawler {
 
     public boolean getCourseCrawler(String origin, String number){
         ArrayList<Course> list = new ArrayList<>();
-        ArrayList<CourseDate> date = new ArrayList<>();
         doc = Jsoup.parse(origin);
         String year = doc.select("#title").select("tr").select("td").select("div").text();
         System.out.println(year);
@@ -39,7 +38,8 @@ public class CourseCrawler {
             course.setCourse(courseDetail.get(0).text());
             //System.out.println(courseDetail.get(0).text());
             course.setTeacher(courseDetail.get(1).text());
-            Elements table = courseInfo.select(".none").select("tr");
+            Elements table = courseInfo.select("table").select("tr");
+            ArrayList<CourseDate> date = new ArrayList<>();
             for(Element courseTemp : table){
                 CourseDate courseDate = new CourseDate();
                 Elements tempDetail = courseTemp.select("td");
@@ -50,6 +50,7 @@ public class CourseCrawler {
                 courseDate.setLocation(tempDetail.get(3).text());
                 date.add(courseDate);
             }
+            course.setDate(date);
             list.add(course);
         }
 
@@ -59,27 +60,25 @@ public class CourseCrawler {
 
         ArrayList<CourseData> dataList = new ArrayList<>();
         for(Course temp1 : list){
-            for(CourseDate temp2 : date){
+            //System.out.println(temp1.getCourse() + temp1.getTeacher());
+            for(CourseDate temp2 : temp1.getDate()){
+                System.out.println(temp2.getWeek() + temp1.getTeacher());
                 String time[] = temp2.getWeek().replace("第","").split("-");
                 if(time.length == 1) {
                     CourseData data = new CourseData();
                     data.setNumber(number);
                     data.setCourse(temp1.getCourse());
                     data.setTeacher(temp1.getTeacher());
-                    if(!temp2.getDate().equals("")) {
+                    if(!temp2.getDate().equals("&nbsp; ")) {
                         data.setDate(DateCalculate.date.get(Integer.parseInt(time[0].replace("周", "")) - 1).getWeeks().get(parseDay(temp2.getDate()) - 1));
                     }
                     else{
                         data.setDate("");
                     }
-                    if(!temp2.getNum().equals("")) {
-                        data.setTime(parseTime(temp2.getNum()));
-                    }
-                    else{
-                        data.setTime("");
-                    }
+                    data.setTime(parseTime(temp2.getNum()));
+                    data.setNum(temp2.getNum());
                     data.setWeek(DateCalculate.date.get(Integer.parseInt(time[0].replace("周", "")) - 1).getWeek());
-                    if(!temp2.getLocation().equals("")) {
+                    if(!temp2.getLocation().equals("&nbsp; ")) {
                         data.setLocation(temp2.getLocation());
                     }
                     else{
@@ -88,7 +87,7 @@ public class CourseCrawler {
                     dataList.add(data);
                 }
                 else{
-                    if(time[1].substring(2,3).equals("单")){
+                    if(time[1].contains("单")){
                         int start = Integer.parseInt(time[0]);
                         int end = Integer.parseInt(time[1].replace("单周",""));
                         for(int i = start; i<=end; i=i+2){
@@ -96,20 +95,16 @@ public class CourseCrawler {
                             data.setNumber(number);
                             data.setCourse(temp1.getCourse());
                             data.setTeacher(temp1.getTeacher());
-                            if(!temp2.getDate().equals("")) {
+                            if(parseDay(temp2.getDate()) != 0) {
                                 data.setDate(DateCalculate.date.get(i - 1).getWeeks().get(parseDay(temp2.getDate()) - 1));
                             }
                             else{
                                 data.setDate("");
                             }
-                            if(!temp2.getNum().equals("")) {
-                                data.setTime(parseTime(temp2.getNum()));
-                            }
-                            else{
-                                data.setTime("");
-                            }
+                            data.setTime(parseTime(temp2.getNum()));
+                            data.setNum(temp2.getNum());
                             data.setWeek(DateCalculate.date.get(i - 1).getWeek());
-                            if(!temp2.getLocation().equals("")) {
+                            if(!temp2.getLocation().equals("&nbsp; ")) {
                                 data.setLocation(temp2.getLocation());
                             }
                             else{
@@ -126,20 +121,16 @@ public class CourseCrawler {
                             data.setNumber(number);
                             data.setCourse(temp1.getCourse());
                             data.setTeacher(temp1.getTeacher());
-                            if(!temp2.getDate().equals("")) {
+                            if(parseDay(temp2.getDate()) != 0) {
                                 data.setDate(DateCalculate.date.get(i - 1).getWeeks().get(parseDay(temp2.getDate()) - 1));
                             }
                             else{
                                 data.setDate("");
                             }
-                            if(!temp2.getNum().equals("")) {
-                                data.setTime(parseTime(temp2.getNum()));
-                            }
-                            else{
-                                data.setTime("");
-                            }
+                            data.setTime(parseTime(temp2.getNum()));
+                            data.setNum(temp2.getNum());
                             data.setWeek(DateCalculate.date.get(i - 1).getWeek());
-                            if(!temp2.getLocation().equals("")) {
+                            if(!temp2.getLocation().equals("&nbsp; ")) {
                                 data.setLocation(temp2.getLocation());
                             }
                             else{
@@ -171,8 +162,10 @@ public class CourseCrawler {
                 courseStatement.setString(8, each.getLocation());
                 courseStatement.executeUpdate();
                 i++;
+                System.out.println("Yes");
             }
-            if(i == list.size()){
+            System.out.println("++++++++"+ i + "+++++++++++");
+            if(i == dataList.size()){
                 return true;
             }
             else{

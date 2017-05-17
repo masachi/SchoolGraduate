@@ -18,7 +18,7 @@ public class DateCalculate {
     public static void calculateDate(String temp){
         String path = temp.replace(" 课程安排","") + ".json";
         try {
-            date = new Gson().fromJson(new JsonReader(new FileReader(path)), new TypeToken<List<TermDate>>() {
+            date = new Gson().fromJson(new JsonReader(new FileReader("json/" +path)), new TypeToken<List<TermDate>>() {
             }.getType());
         }
         catch (Exception e){
