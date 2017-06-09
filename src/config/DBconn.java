@@ -16,7 +16,7 @@ public class DBconn {
             Class.forName("com.mysql.jdbc.Driver");
             System.out.println("成功加载MySQL驱动！");
 
-            String url = "jdbc:mysql://153.125.235.241:31424/graduate?useUnicode=true&characterEncoding=utf8";    //JDBC的URL
+            String url = "jdbc:mysql://182.254.152.66:3306/graduate?useUnicode=true&characterEncoding=utf8";    //JDBC的URL
             connection = DriverManager.getConnection(url, "root", "sizhaizhenexin");
             statement = connection.createStatement(); //创建Statement对象
             System.out.println("成功连接到数据库！");

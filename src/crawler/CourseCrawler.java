@@ -2,10 +2,7 @@ package crawler;
 
 import config.DBconn;
 import config.DateCalculate;
-import model.Course;
-import model.CourseData;
-import model.CourseDate;
-import model.Grade;
+import model.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,6 +22,7 @@ public class CourseCrawler {
 
     public boolean getCourseCrawler(String origin, String number){
         ArrayList<Course> list = new ArrayList<>();
+        ArrayList<CourseInfo> infoList = new ArrayList();
         doc = Jsoup.parse(origin);
         String year = doc.select("#title").select("tr").select("td").select("div").text();
         System.out.println(year);
@@ -52,6 +50,28 @@ public class CourseCrawler {
             }
             course.setDate(date);
             list.add(course);
+        }
+
+        for(Element courseInfo : info){
+            CourseInfo course_info = new CourseInfo();
+            Elements courseDetail = courseInfo.select(".infolist");
+            if(courseDetail.size() == 0){
+                break;
+            }
+            course_info.setNumber(number);
+            course_info.setCourse(courseDetail.get(0).text());
+            //System.out.println(courseDetail.get(0).text());
+            course_info.setWeight(courseDetail.get(1).text());
+            Elements table = courseInfo.select("table").select("tr");
+            String week = "";
+            for(Element courseTemp : table){
+                Elements tempDetail = courseTemp.select("td");
+                //System.out.println(tempDetail.get(0).text());
+                week = week + tempDetail.get(0).text() + " " + tempDetail.get(1).text() + " " + tempDetail.get(2).text()  + " " + tempDetail.get(3).text() + "\n";
+            }
+            course_info.setWeek(week);
+            course_info.setInfo("test.......test...........\ntext..............\ntest..........................................");
+            infoList.add(course_info);
         }
 
         DateCalculate.calculateDate(year);
@@ -148,9 +168,12 @@ public class CourseCrawler {
             Statement deleteGrade = DBconn.connection.createStatement();
             deleteGrade.execute("delete from course where number = " + number);
 
-            String sql = sql = "insert into course(number, date, time, num, week, course, teacher, location) values(?,?,?,?,?,?,?,?)";
+            String sql = "insert into course(number, date, time, num, week, course, teacher, location) values(?,?,?,?,?,?,?,?)";
+            String sql2 = "insert into course_info(number, course, weight, week, info) values(?,?,?,?,?)";
             PreparedStatement courseStatement = DBconn.connection.prepareStatement(sql);
+            PreparedStatement infoStatement = DBconn.connection.prepareStatement(sql2);
             int i=0;
+            int j = 0;
             for(CourseData each : dataList){
                 courseStatement.setString(1, each.getNumber());
                 courseStatement.setString(2, each.getDate());
@@ -164,8 +187,21 @@ public class CourseCrawler {
                 i++;
                 System.out.println("Yes");
             }
-            System.out.println("++++++++"+ i + "+++++++++++");
-            if(i == dataList.size()){
+
+            for(CourseInfo each : infoList){
+                infoStatement.setString(1, each.getNumber());
+                infoStatement.setString(2, each.getCourse());
+                infoStatement.setString(3, each.getWeight());
+                infoStatement.setString(4, each.getWeek());
+                infoStatement.setString(5, each.getInfo());
+                infoStatement.executeUpdate();
+                j++;
+                System.out.println("Yes");
+            }
+
+
+            System.out.println("++++++++"+ i + "+++++++++++" + "++++++++"+ j + "+++++++++++");
+            if(i == dataList.size() && j == infoList.size()){
                 return true;
             }
             else{
