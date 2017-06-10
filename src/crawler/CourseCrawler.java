@@ -61,16 +61,19 @@ public class CourseCrawler {
             course_info.setNumber(number);
             course_info.setCourse(courseDetail.get(0).text());
             //System.out.println(courseDetail.get(0).text());
-            course_info.setWeight(courseDetail.get(1).text());
+            course_info.setWeight(courseInfo.select(".center").get(1).text());
             Elements table = courseInfo.select("table").select("tr");
             String week = "";
             for(Element courseTemp : table){
                 Elements tempDetail = courseTemp.select("td");
                 //System.out.println(tempDetail.get(0).text());
-                week = week + tempDetail.get(0).text() + " " + tempDetail.get(1).text() + " " + tempDetail.get(2).text()  + " " + tempDetail.get(3).text() + "\n";
+                for(Element detailTemp : tempDetail){
+                    week = week + detailTemp.text();
+                }
+                week = week + "\\n";
             }
             course_info.setWeek(week);
-            course_info.setInfo("test.......test...........\ntext..............\ntest..........................................");
+            course_info.setInfo("test.......test...........\\ntext..............\\ntest..........................................");
             infoList.add(course_info);
         }
 
